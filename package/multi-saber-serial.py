@@ -7,9 +7,9 @@ class MultiSaberLegacy:
 
 	uartMsg = "" # initalize empty uart Msg
 
-	def __init__(self, addresses, enableFailsafe ):
+	def __init__(self, addresses):
 		self.addresses = addresses
-		self.enableFailsafe = enableFailsafe			
+		#self.enableFailsafe = enableFailsafe			
 
 	def driveMotors(self, speeds):
 		self.uartMsg = "" # reset uart msg buffer
@@ -62,12 +62,14 @@ class MultiSaberLegacy:
 	                                
 
 			# python write uart message
-			return bytearray(self.uartMsg, "utf-8")
+			print("END___________________________________________")
+			return bytes(bytearray(self.uartMsg, "utf-8"))
+			#return self.uartMsg.encode()
 
 		else: # Mismatch too many or too litte motor speeds for the amount of sabertooths to control
 
-			if enableFailsafe:
-				pass
+			#if enableFailsafe:
+			#	pass
 
 
 
@@ -92,14 +94,26 @@ class MultiSaberLegacy:
 		return (address + int(command) + int(data)) & 0b01111111
 
 import serial
+import time
+
+serial_port = serial.Serial(
+    port="/dev/ttyTHS1",
+    baudrate=115200,
+    bytesize=serial.EIGHTBITS,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+)
+# Wait a second to let the port initialize
+time.sleep(1)
+
+
 #https://pyserial.readthedocs.io/en/latest/pyserial_api.html
-instance = MultiSaberLegacy([128, 129, 130], [115200])
+instance = MultiSaberLegacy([128, 129])
 
-instance.driveMotors([-0.4, 0.3, 0.4, -0.9, 1.0, 0.3])
+serial_port.write(instance.driveMotors([-0.2, 0.3, 0.2, -0.1]))
 
-print("---------------------------------------------------")
+time.sleep(5)
 
-instance.driveMotors([0.2, -0.3, 0.423, -0.9, -0.2])
+serial_port.write(instance.driveMotors([0, 0, 0, 0]))
 
-
-
+serial_port.close()
